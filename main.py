@@ -15,15 +15,14 @@ DATA_SEED = 100
 # Clients
 CLIENTS = 100
 MIN_DATA_ITEMS = 10
-MAX_DATA_ITEMS = 20
-CLIENT_SEED = 20
+MAX_DATA_ITEMS = 30
+CLIENT_SEED = 10
 CLIENT_SLEEP_INTERVAL = 1 
 
 # Server
-random.seed(2)
 TIME_SLOT = random.randint(1, 3)
 BANDWIDTH = 1000
-DELTA = 300 # Must allow at least one full request to be downloaded   
+DELTA = 30 # Must allow at least one full request to be downloaded   
 
 DOWN_STREAM = []
 
