@@ -4,6 +4,13 @@ from pulp import *
 import numpy as np
 import time
 
+# Display options
+DEBUG = False
+SCHEDULED_REQUESTS = False
+BENCHMARK = True
+
+
+
 class DataItems:
   def __init__(self, item_count=1000, theta=0.8, minimum_size=10, maximum_size=30, seed=100):
     # Zipf distribution related information
