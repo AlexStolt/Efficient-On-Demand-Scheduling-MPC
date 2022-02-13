@@ -51,7 +51,7 @@ class Server:
       else:
         break
 
-
+      # Run MTRS, Least Lost Heuristic and MLRO
       self.__scheduler()
 
       # Write to downstream
@@ -70,7 +70,7 @@ class Server:
       
       # Dequeue items from list (completely delete it)
       self.broadcast.clear()
-      # sleep(2)
+      
 
   # Perform MTRS, Pruning and MLRO to populate the self.broadcast channel    
   def __scheduler(self):
@@ -147,6 +147,7 @@ class Server:
       return self.__request_optimal_schedule(Q)
 
 
+  # MLRO helper equations (3, 4) and (5, 6)
   def __data_optimal_schedule(self, Q, W):
     current_time = time.time()
     
@@ -182,7 +183,7 @@ class Server:
 
     return Q
     
-
+  # Helper for MLOR to calculate weights of each request
   def __calculate_weight(self, data_item, order):
     for i in range(len(order)):
       if order[i]["data_index"] != data_item["data_index"]:
@@ -190,6 +191,7 @@ class Server:
       data_item["weight"] = i
   
 
+  # Calculate access latency for each data item
   def __data_average_access_latency(self, current_time, data_index):
     AAL = 0
 
@@ -260,24 +262,17 @@ class Server:
     while self.__time_to_send_requests(Q) > self.delta:
       minimized = sys.maxsize
       minimized_data_item = None
-      for data in W:
-        # request = self.__get_request_by_index(Q, data["request_index"])
-       
-        # if not request:
-        #   continue
-        
+      for data in W:        
         total_requests_containing_data_item = self.__total_requests_containing_data_item(Q, data['data_index'])
         if minimized > total_requests_containing_data_item:
           minimized = total_requests_containing_data_item
           minimized_data_item = data
         
-        # if minimized > self.__get_total_data_items_in_request(request) / data["time"]:
-        #   minimized = self.__get_total_data_items_in_request(request) / data["time"]
-        #   minimized_data_item = data
-
+      
       # This is NOT mentioned by the paper but helps to avoid starvation on large requests
       if len(Q) < 2:
         break
+      
       # Delete d from W and delete Q that includes d
       W.remove(minimized_data_item)
       self.__remove_requests_conaining_data_item(Q, minimized_data_item)
@@ -285,12 +280,14 @@ class Server:
     return Q
 
 
+  # Delete requests that contain a certain data item
   def __remove_requests_conaining_data_item(self, Q, data_item):
     for request in Q[:]:
       for data in request["data"]:
         if data != data_item:
           continue
         Q.remove(request)
+
 
   # Get request based on its index
   def __get_request_by_index(self, Q, index):
@@ -301,6 +298,8 @@ class Server:
       return request
     return None
 
+
+  # Least lost heuristic: |{Q | Q ∈ Q, d ∈ D(Q)}|
   def __total_requests_containing_data_item(self, Q, index):
     total_requests = 0
 
@@ -313,8 +312,6 @@ class Server:
     return total_requests
     
 
-
-
   # Helper function to populate remainder data items W
   def __populate_remainder_data_items(self, Q):
     W = []
@@ -323,10 +320,6 @@ class Server:
         W.append(data)
     
     return W
-
-  # Helper for pruning to find the length of request 
-  def __get_total_data_items_in_request(self, request):
-    return len(request["data"])
 
  
   # Perform the MTRS algorithm to optimize for throughput
@@ -394,7 +387,7 @@ class Server:
     return False
     
 
-
+  # Preprocess data to feed to PuLP for linear programming solution
   def __preprocess_model_results(self, model):
     # Get 
     x = []
@@ -429,7 +422,7 @@ class Server:
     return x, y
 
 
-
+  # PuLP model for MTRS
   def __optimization_model(self):
     model = LpProblem("MTRS", LpMaximize)
 
@@ -451,6 +444,7 @@ class Server:
     status =  LpStatus[model.status]
 
     return model, status
+
 
   # Calculate time slots based on the size of the data item and throughput of the server
   def __calculate_time(self, size):

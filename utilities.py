@@ -56,7 +56,6 @@ class DataItems:
     return decision_variables_allocation
 
 
-
   # Get data items for linear programming to solve the optimization 
   # problem based on the number of requests given by the server
   def optimization_get_data_items(self, total_requests):
