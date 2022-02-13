@@ -36,11 +36,9 @@ class Server:
 
 
   def send_response(self):
-    
     while True:
       #Populate pending list (put Q into L)
       self.__receive_requests()
-      
       
       for request in self.pending[:]:
         if not request.request:
@@ -53,14 +51,7 @@ class Server:
       else:
         break
 
-      if DEBUG:
-        print('--------------------------------------- [Pending Requests] ---------------------------------------')
-        for i in self.pending:
-          print(repr(i))
-        print('--------------------------------------------------------------------------------------------------')
-        print('--------------------------------------- [Completed Requests] ---------------------------------------')
-        print(self.completed)
-        print('--------------------------------------------------------------------------------------------------')
+
       self.__scheduler()
 
       # Write to downstream
@@ -261,6 +252,7 @@ class Server:
     if BENCHMARK:
       print(Fore.RED + "Performing Least Loss Heuristic Algorithm" + Style.RESET_ALL)
     
+
     # W <- D(Q)
     W = self.__populate_remainder_data_items(Q)
 
@@ -269,24 +261,31 @@ class Server:
       minimized = sys.maxsize
       minimized_data_item = None
       for data in W:
-        request = self.__get_request_by_index(Q, data["request_index"])
-        if not request:
-          continue
+        # request = self.__get_request_by_index(Q, data["request_index"])
+       
+        # if not request:
+        #   continue
         
-        if minimized > self.__get_total_data_items_in_request(request) / data["time"]:
-          minimized = self.__get_total_data_items_in_request(request) / data["time"]
+        total_requests_containing_data_item = self.__total_requests_containing_data_item(Q, data['data_index'])
+        if minimized > total_requests_containing_data_item:
+          minimized = total_requests_containing_data_item
           minimized_data_item = data
+        
+        # if minimized > self.__get_total_data_items_in_request(request) / data["time"]:
+        #   minimized = self.__get_total_data_items_in_request(request) / data["time"]
+        #   minimized_data_item = data
 
+      # This is NOT mentioned by the paper but helps to avoid starvation on large requests
+      if len(Q) < 2:
+        break
       # Delete d from W and delete Q that includes d
       W.remove(minimized_data_item)
-      self.__remove_request_with_data_item(Q, minimized_data_item)
-
-    
-
+      self.__remove_requests_conaining_data_item(Q, minimized_data_item)
+      
     return Q
 
 
-  def __remove_request_with_data_item(self, Q, data_item):
+  def __remove_requests_conaining_data_item(self, Q, data_item):
     for request in Q[:]:
       for data in request["data"]:
         if data != data_item:
@@ -301,6 +300,19 @@ class Server:
         
       return request
     return None
+
+  def __total_requests_containing_data_item(self, Q, index):
+    total_requests = 0
+
+    for request in Q:
+      for data in request["data"]:
+        if data["data_index"] != index:
+          continue
+        total_requests += 1
+
+    return total_requests
+    
+
 
 
   # Helper function to populate remainder data items W
