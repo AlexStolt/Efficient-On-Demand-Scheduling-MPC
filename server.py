@@ -10,9 +10,8 @@ import math
 from colorama import Fore, Back, Style
 import sys
 import time
+from utilities import DEBUG, SCHEDULED_REQUESTS, BENCHMARK # Settings to control stdout
 
-DEBUG = False
-SCHEDULED_REQUESTS = False
 
 class Server:
   def __init__(self, clients, data_items, DOWN_STREAM, bandwidth=10, time_slot=1, delta=4):
@@ -22,7 +21,7 @@ class Server:
 
     # Server related information for throughput computation
     self.bandwidth = bandwidth * 1024
-    self.timeslots = 1
+    self.timeslots = time_slot
 
     # Scheduling related information
     self.delta = delta
@@ -134,22 +133,26 @@ class Server:
 
   # Perform the MLRO to optimize for latency
   def __mlro(self, Q):
-    print(Fore.GREEN + "Performing the MLRO Algorithm" + Style.RESET_ALL)
+    if BENCHMARK:
+      print(Fore.GREEN + "Performing the MLRO Algorithm" + Style.RESET_ALL)
+    
     # W <- D(Q)
     W = self.__populate_remainder_data_items(Q)
 
     # n = |D(Q)|
     n = len(W)
-
+    
     # Optimal schedule  
     if n <= len(Q):
       # Equations (3) and (4)
-      print("Appling Equations 3 and 4")
+      if BENCHMARK:
+        print("Appling Equations 3 and 4")
       return self.__data_optimal_schedule(Q, W)
 
     else:
       # Equations (5) and (6)
-      print("Appling Equations 5 and 6")
+      if BENCHMARK:
+        print("Appling Equations 5 and 6")
       return self.__request_optimal_schedule(Q)
 
 
@@ -255,7 +258,8 @@ class Server:
 
   # Least Lost Heuristic Algorithm that returns an updated requests list Q
   def __least_lost_heuristic(self, Q):
-    print(Fore.RED + "Performing Least Loss Heuristic Algorithm" + Style.RESET_ALL)
+    if BENCHMARK:
+      print(Fore.RED + "Performing Least Loss Heuristic Algorithm" + Style.RESET_ALL)
     
     # W <- D(Q)
     W = self.__populate_remainder_data_items(Q)
@@ -277,6 +281,7 @@ class Server:
       W.remove(minimized_data_item)
       self.__remove_request_with_data_item(Q, minimized_data_item)
 
+    
 
     return Q
 
@@ -314,7 +319,8 @@ class Server:
  
   # Perform the MTRS algorithm to optimize for throughput
   def __mtrs(self):
-    print(Fore.GREEN + "Performing the MTRS Algorithm" + Style.RESET_ALL)
+    if BENCHMARK:
+      print(Fore.GREEN + "Performing the MTRS Algorithm" + Style.RESET_ALL)
 
     model, status = self.__optimization_model()
     
