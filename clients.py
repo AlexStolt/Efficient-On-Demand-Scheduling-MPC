@@ -1,15 +1,10 @@
-from distutils.command.clean import clean
-from http import client
-from os import stat
 import threading
 import random
 from time import sleep
-from enum import Enum
-from urllib import request
 from utilities import RequestStatus
-import numpy as np
-import time
+import timeit
 import copy
+
 
 class Clients:
   def __init__(self, client_count, data_items, DOWN_STREAM, minimum_data_items = 1, maximum_data_items=4, seed=100, maximum_interval=2):
@@ -80,7 +75,7 @@ class Clients:
       client = self.Client(client_index, request, DOWN_STREAM, self.maximum_interval)
       self.clients.append(client)
 
-
+  
   # Get final data item's position
   def max_data_item(self):
     return self.maximum_data_item_index
@@ -99,6 +94,7 @@ class Clients:
       return client
     return None
 
+
   def send_requests(self):  
     # Start a Thread for each client
     for client in self.clients:
@@ -109,7 +105,6 @@ class Clients:
       self.threads.append(thread)
 
 
-
   # Inner class that is used to store client information  
   class Client:
     def __init__(self, id, request, DOWN_STREAM, maximum_interval):
@@ -117,6 +112,7 @@ class Clients:
       self.request = request
       self.submitted_request_time = -1
       self.downstream = DOWN_STREAM
+      self.latency = 0
 
       # The request was not sent yet. This helps us activate requests at
       # random intervals since all requests do not reach the server at the
@@ -140,7 +136,7 @@ class Clients:
       # Wait before sending the request
       sleep(random.randint(0, self.maximum_interval))
       
-      self.submitted_request_time = time.time()
+      self.submitted_request_time = timeit.default_timer()
       # Set the flag that the request was send
       self.status = RequestStatus.SENT
       
@@ -162,9 +158,12 @@ class Clients:
             self.request.remove(request)
         
 
+      # Calculate AAL after the response was received and the request is finished
+      self.latency = timeit.default_timer() - self.submitted_request_time
+      
 
+      # Mark request as finished
       self.status = RequestStatus.FINISHED
-      # self.status = RequestStatus.SENT -> self.status = RequestStatus.FINISHED AND RETURN WHEN THREAD FINISHES TO ALERT THE SERVER
 
 
      # String on how the object was created (for debuging)
@@ -187,12 +186,18 @@ class Clients:
       return self.request
 
 
+    # Returns latency to calculate AAL
+    def get_latency(self):
+      return self.latency
+
+
     # Return client's request at position index
     def get_indexed_data_item(self, index):
       for item in self.request:
         if item.get_index() == index:
           return item
       return None
+
 
     # Return client's request status
     def get_status(self):

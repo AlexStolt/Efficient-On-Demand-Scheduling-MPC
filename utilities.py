@@ -7,7 +7,7 @@ import time
 # Display options
 DEBUG = False
 SCHEDULED_REQUESTS = False
-BENCHMARK = True
+BENCHMARK = False
 
 
 
@@ -151,3 +151,19 @@ class RequestStatus(Enum):
   WAITING = 0
   SENT = 1
   FINISHED = 2
+
+class BenchmarkUtilities:
+  def __init__(self, clients, server):
+    self.clients = clients
+
+  def get_total_AAL(self):
+    AAL = 0
+    for client in self.clients.get_clients():
+      AAL += client.get_latency()
+    
+    AAL /= len(self.clients.get_clients())
+    
+    return AAL
+
+
+

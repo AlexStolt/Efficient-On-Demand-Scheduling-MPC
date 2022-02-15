@@ -1,12 +1,12 @@
-import threading
 from clients import Clients
 from server import Server
-from utilities import DataItems
+from utilities import BENCHMARK, DataItems
 import timeit
 import random
+from utilities import BenchmarkUtilities 
 
 # Data Items
-TOTAL_DATA_ITEMS = 1000
+TOTAL_DATA_ITEMS = 100
 THETA = 0.8
 MIN_DATA_SIZE = 10000
 MAX_DATA_SIZE = 30000
@@ -26,13 +26,10 @@ DELTA = 30 # Must allow at least one full request to be downloaded
 
 DOWN_STREAM = []
 
-if __name__ == '__main__':
- 
+# Spawn data items, clients and a server
+def init():
   # Create a list of all available data items used for data selection based on their probabilities
   data_items = DataItems(TOTAL_DATA_ITEMS, THETA, MIN_DATA_SIZE, MAX_DATA_SIZE, DATA_SEED)
-
-  # Start of execution time
-  start = timeit.default_timer()
 
   # Create list of requests of data items for clients 
   clients = Clients(CLIENTS, data_items, DOWN_STREAM, MIN_DATA_ITEMS, MAX_DATA_ITEMS, CLIENT_SEED, CLIENT_SLEEP_INTERVAL)
@@ -40,6 +37,20 @@ if __name__ == '__main__':
   # Clients are connected to the server
   server = Server(clients, data_items, DOWN_STREAM, BANDWIDTH, TIME_SLOT, DELTA)
 
+  # Benchmark information
+  benchmark_info = BenchmarkUtilities(clients, server)
+
+  return clients, server, benchmark_info
+
+
+if __name__ == '__main__':
+
+  # Initialize Clients and Server
+  clients, server, benchmark_info = init()
+
+  # Start of execution time
+  start = timeit.default_timer()
+  
   # Send requests to server
   clients.send_requests()
   
@@ -48,6 +59,8 @@ if __name__ == '__main__':
 
   # End of execution time
   stop = timeit.default_timer()
-  
 
+
+
+  print('AAL: ', benchmark_info.get_total_AAL())
   print('Total Time of Execution: ', stop - start)  
