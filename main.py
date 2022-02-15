@@ -1,6 +1,6 @@
 from clients import Clients
 from server import Server
-from utilities import BENCHMARK, DataItems
+from utilities import DataItems
 import timeit
 import random
 from utilities import BenchmarkUtilities 
