@@ -1,11 +1,11 @@
-from utilities import BENCHMARK, RequestStatus
+from utilities import BENCHMARK, DEBUG, RequestStatus
 from pulp import *
 import numpy as np
 import math
 from colorama import Fore, Style
 import sys
 import time
-from utilities import SCHEDULED_REQUESTS, BENCHMARK # Settings to control stdout
+from utilities import DEBUG, BENCHMARK # Settings to control stdout
 
 
 class Server:
@@ -74,7 +74,7 @@ class Server:
       Q = self.__mtrs()
 
       # Print Q for debuging purposes
-      if SCHEDULED_REQUESTS:
+      if DEBUG:
         print(json.dumps(Q, indent=2))
 
       # Calculate T(Q)
@@ -85,14 +85,14 @@ class Server:
         self.__least_lost_heuristic(Q)
 
         # Print Q for debuging purposes
-        if SCHEDULED_REQUESTS:
+        if DEBUG:
           print(json.dumps(Q, indent=2))
 
       # Apply the MLRO to optimize for latency
       S = self.__mlro(Q)
       
       # Print Q for debuging purposes
-      if SCHEDULED_REQUESTS:
+      if DEBUG:
         print(json.dumps(S, indent=2))
 
       # Create broadcast channel populated with data items
