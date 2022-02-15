@@ -1,16 +1,11 @@
-from distutils.debug import DEBUG
-from statistics import mode
-import threading
-from time import sleep
-from urllib import request
-from utilities import RequestStatus
+from utilities import BENCHMARK, RequestStatus
 from pulp import *
 import numpy as np
 import math
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 import sys
 import time
-from utilities import DEBUG, SCHEDULED_REQUESTS, BENCHMARK # Settings to control stdout
+from utilities import SCHEDULED_REQUESTS, BENCHMARK # Settings to control stdout
 
 
 class Server:
@@ -124,7 +119,7 @@ class Server:
 
   # Perform the MLRO to optimize for latency
   def __mlro(self, Q):
-    if BENCHMARK:
+    if not BENCHMARK:
       print(Fore.GREEN + "Performing the MLRO Algorithm" + Style.RESET_ALL)
     
     # W <- D(Q)
@@ -136,13 +131,13 @@ class Server:
     # Optimal schedule  
     if n <= len(Q):
       # Equations (3) and (4)
-      if BENCHMARK:
+      if not BENCHMARK:
         print("Appling Equations 3 and 4")
       return self.__data_optimal_schedule(Q, W)
 
     else:
       # Equations (5) and (6)
-      if BENCHMARK:
+      if not BENCHMARK:
         print("Appling Equations 5 and 6")
       return self.__request_optimal_schedule(Q)
 
@@ -251,7 +246,7 @@ class Server:
 
   # Least Lost Heuristic Algorithm that returns an updated requests list Q
   def __least_lost_heuristic(self, Q):
-    if BENCHMARK:
+    if not BENCHMARK:
       print(Fore.RED + "Performing Least Loss Heuristic Algorithm" + Style.RESET_ALL)
     
 
@@ -324,7 +319,7 @@ class Server:
  
   # Perform the MTRS algorithm to optimize for throughput
   def __mtrs(self):
-    if BENCHMARK:
+    if not BENCHMARK:
       print(Fore.GREEN + "Performing the MTRS Algorithm" + Style.RESET_ALL)
 
     model, status = self.__optimization_model()
