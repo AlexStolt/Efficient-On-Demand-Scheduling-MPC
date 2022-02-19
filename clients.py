@@ -7,7 +7,7 @@ import copy
 
 
 class Clients:
-  def __init__(self, client_count, data_items, DOWN_STREAM, minimum_data_items = 1, maximum_data_items=4, seed=100, maximum_interval=2):
+  def __init__(self, client_count, data_items, DOWN_STREAM, minimum_data_items=1, maximum_data_items=4, seed=100, maximum_interval=2):
     # Client information 
     self.client_count = client_count
     # Sort data items based on their selection probability 
@@ -80,10 +80,19 @@ class Clients:
   def max_data_item(self):
     return self.maximum_data_item_index
 
+  # Returns all available clients
+  # Used for benchmark reasons
+  def get_total_clients(self):
+    return self.clients
+
 
   # Return all available clients
   def get_clients(self):
-    return self.clients
+    active_clients = []
+    for client in self.clients:
+      if client.status != RequestStatus.FINISHED:
+        active_clients.append(client)
+    return active_clients
 
 
   # Return a client based on his id and status code
@@ -137,10 +146,10 @@ class Clients:
       sleep(random.randint(0, self.maximum_interval))
       
       self.submitted_request_time = timeit.default_timer()
+      
       # Set the flag that the request was send
       self.status = RequestStatus.SENT
       
-
       while self.request:
         # Block till a data item arrives
         self.semaphore.acquire()
@@ -156,15 +165,13 @@ class Clients:
             
             # Request received and is not needed anymore
             self.request.remove(request)
-        
-
+            
       # Calculate AAL after the response was received and the request is finished
       self.latency = timeit.default_timer() - self.submitted_request_time
-      
 
       # Mark request as finished
       self.status = RequestStatus.FINISHED
-
+              
 
      # String on how the object was created (for debuging)
     def __repr__(self):

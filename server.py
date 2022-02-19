@@ -25,15 +25,21 @@ class Server:
     self.broadcast = [] # V
     self.downstream = DOWN_STREAM
     
+
   @property
   def pending_requests_count(self):
     return len(self.pending)
 
 
+  # Functions that handles sending responses with the help of the scheduler
   def send_response(self):
     while True:
+      clients = self.clients.get_clients()
+      if not clients:
+        return
+
       #Populate pending list (put Q into L)
-      self.__receive_requests()
+      self.__receive_requests(clients)
       
       for request in self.pending[:]:
         if not request.request:
@@ -49,8 +55,18 @@ class Server:
       # Run MTRS, Least Lost Heuristic and MLRO
       self.__scheduler()
 
+      download_timeslots = 0
+      # Calculate time to actually download items from client side
+      for data in self.broadcast:
+        download_timeslots = download_timeslots + (data.get_size() / (self.bandwidth * self.timeslots)) # 
+      
       # Write to downstream
       self.downstream.extend(self.broadcast[:])
+      
+      # Wait for a certain amount of timeslots to begin sending 
+      download_timeslots = math.ceil(download_timeslots)
+      
+      time.sleep(download_timeslots)
 
       # Up clients semaphores to enable receiving
       for client in self.clients.get_clients():
@@ -107,7 +123,7 @@ class Server:
     # Q is empty
     if not Q:
       return 0
-
+    
      # Calculate time to send Q
     time = 0
     for request in Q:
@@ -464,10 +480,13 @@ class Server:
         if not client.get_indexed_data_item(i):
           pending_data_list.append(0)
         else:
-          # Calculate send data time for each item in the request 
-          time =  self.__calculate_time(client.get_indexed_data_item(i).get_size())
-          pending_data_list.append(time)
-      
+          try:
+            # Calculate send data time for each item in the request 
+            time =  self.__calculate_time(client.get_indexed_data_item(i).get_size())
+            pending_data_list.append(time)
+          except:
+            pending_data_list.append(0)
+
       # Append data to the request
       pending_request_list.append(pending_data_list)
 
@@ -492,15 +511,14 @@ class Server:
 
 
   # A function that receives requests from connected clients
-  def __receive_requests(self):
-    clients = self.clients.get_clients()
-
+  def __receive_requests(self, clients):
+    
     for i in range(len(clients)):
       if clients[i].get_status() == RequestStatus.SENT and not clients[i].request_received():
         self.pending.append(clients[i])
         
         clients[i].received = True
-        
+
         # Sort data items of the pending request based on their id.
         # This is used later for latency computation.        
         self.pending[-1].request.sort(key=lambda item: item.id)

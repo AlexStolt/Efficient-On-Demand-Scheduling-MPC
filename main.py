@@ -1,28 +1,29 @@
+from distutils.command.config import config
 from clients import Clients
 from server import Server
 from utilities import DataItems
 import timeit
 import random
 from utilities import BenchmarkUtilities 
+from config import * 
+# # Data Items
+# TOTAL_DATA_ITEMS = 10
+# THETA = 0.8
+# MIN_DATA_SIZE = 10 #KiB
+# MAX_DATA_SIZE = 30 #KiB
+# DATA_SEED = 100
 
-# Data Items
-TOTAL_DATA_ITEMS = 100
-THETA = 0.8
-MIN_DATA_SIZE = 10000
-MAX_DATA_SIZE = 30000
-DATA_SEED = 100
+# # Clients
+# CLIENTS = 100
+# MIN_DATA_ITEMS = 10
+# MAX_DATA_ITEMS = 30
+# CLIENT_SEED = 10
+# CLIENT_SLEEP_INTERVAL = 1 
 
-# Clients
-CLIENTS = 100
-MIN_DATA_ITEMS = 10
-MAX_DATA_ITEMS = 30
-CLIENT_SEED = 10
-CLIENT_SLEEP_INTERVAL = 1 
-
-# Server
-TIME_SLOT = random.randint(1, 3)
-BANDWIDTH = 1000
-DELTA = 30 # Must allow at least one full request to be downloaded   
+# # Server
+# TIME_SLOT = random.randint(1, 3)
+# BANDWIDTH = 24 #KiB/s
+# DELTA = 10 # Must allow at least one full request to be downloaded   
 
 DOWN_STREAM = []
 
