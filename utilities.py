@@ -3,12 +3,7 @@ from enum import Enum
 from pulp import *
 import numpy as np
 import time
-
-# Display options
-DEBUG = False
-SCHEDULED_REQUESTS = False
-BENCHMARK = False
-
+from config import DEBUG, BENCHMARK
 
 
 class DataItems:
@@ -35,9 +30,11 @@ class DataItems:
   def get_data_items(self):
     return self.data_items
 
-  def get_data_item(self, position):
-    if position < len(self.data_items):
-      return self.data_items[position]
+
+  # Return data item located at index position
+  def get_data_item(self, index):
+    if index < len(self.data_items):
+      return self.data_items[index]
     
     return None
 
@@ -136,6 +133,7 @@ class DataItems:
     def get_probability(self):
       return self.probability
 
+
     # Return the time that the data item was submitted
     def get_submitted_time(self):
       return self.submitted_request_time
@@ -152,18 +150,18 @@ class RequestStatus(Enum):
   SENT = 1
   FINISHED = 2
 
+
+# Class used for benchmarking operations
+# Feature must be added to handle .xlsx files
 class BenchmarkUtilities:
   def __init__(self, clients, server):
     self.clients = clients
 
   def get_total_AAL(self):
     AAL = 0
-    for client in self.clients.get_clients():
+    for client in self.clients.get_total_clients():
       AAL += client.get_latency()
-    
-    AAL /= len(self.clients.get_clients())
+      
+    AAL /= len(self.clients.get_total_clients())
     
     return AAL
-
-
-
